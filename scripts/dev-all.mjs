@@ -1,7 +1,7 @@
 // Supervises the dev stack for local dev: npm run dev:all (from the repo root).
 // Also handles `npm run status` via --status.
 //
-// - Step 0 starts Postgres via docker compose (idempotent `up -d`) and waits for 5433 to accept TCP.
+// - Step 0 starts Postgres via docker compose (idempotent `up -d`) and waits until pg_isready (TCP, inside the container) answers.
 // - Before starting the node services, checks each port; if it's held by a stale dev process
 //   (its cwd or command line points into this repo) it kills that process tree, otherwise it aborts.
 // - server runs `node src/main.ts` directly (Auth 39290 + Game 39291-39293 + web front 8090 with
@@ -14,7 +14,6 @@
 //   does not full-reload the browser either. Restart-on-crash stays on. Reload = F5 / re-run.
 import { execFileSync, spawn } from 'node:child_process';
 import { watch } from 'node:fs';
-import net from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -61,22 +60,21 @@ async function statusCmd() {
   }
 }
 
-function waitTcpAccept(port, host = '127.0.0.1', timeoutMs = 30000) {
+// The published port accepts TCP before postgres does: on the first start (empty volume) initdb runs a server that listens
+// on the socket only, so a TCP connect to 5433 gets "Connection terminated unexpectedly". Ask postgres inside the container over TCP.
+function pgReady() {
+  try {
+    execFileSync('docker', ['compose', '-p', 'pbwebport', '-f', 'docker-compose.yml', 'exec', '-T', 'postgres', 'pg_isready', '-h', '127.0.0.1', '-U', process.env.PB_DB_USER || 'postgres', '-d', process.env.PB_DB_NAME || 'pb'], { cwd: dbDir, stdio: 'ignore' });
+    return true;
+  } catch { return false; }
+}
+
+async function waitPgReady(timeoutMs = 90000) {
   const deadline = Date.now() + timeoutMs;
-  return new Promise((resolvePromise, reject) => {
-    function attempt() {
-      const sock = net.createConnection({ host, port });
-      const fail = () => {
-        sock.destroy();
-        if (Date.now() > deadline) reject(new Error(`timed out waiting for ${host}:${port}`));
-        else setTimeout(attempt, 500);
-      };
-      sock.once('connect', () => { sock.end(); resolvePromise(); });
-      sock.once('error', fail);
-      sock.setTimeout(1000, fail);
-    }
-    attempt();
-  });
+  while (!pgReady()) {
+    if (Date.now() > deadline) throw new Error(`postgres not ready after ${timeoutMs / 1000}s (see: docker compose -p pbwebport logs postgres)`);
+    await new Promise((r) => setTimeout(r, 1000));
+  }
 }
 
 async function startPostgres() {
@@ -90,9 +88,9 @@ async function startPostgres() {
     console.error(color('sup', '[sup] is Docker Desktop running?'));
     process.exit(1);
   }
-  console.log(color('sup', `[sup] waiting for postgres on :${POSTGRES_PORT}...`));
+  console.log(color('sup', `[sup] waiting for postgres on :${POSTGRES_PORT} (pg_isready in the container)...`));
   try {
-    await waitTcpAccept(POSTGRES_PORT);
+    await waitPgReady();
   } catch (e) {
     console.error(color('sup', `[sup] ${e.message}`));
     process.exit(1);

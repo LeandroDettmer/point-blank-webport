@@ -1,5 +1,6 @@
-import { defineConfig, loadEnv, type Plugin } from "vite";
-import { readFileSync, readdirSync } from "node:fs";
+import { defineConfig, loadEnv, type Plugin, type PreviewServer, type ViteDevServer } from "vite";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { assetResolver, cssUrls, type AssetMap } from "./src/assetMap.ts";
 
@@ -54,6 +55,25 @@ function hashedAssets(): Plugin {
   };
 }
 
+/** dev + preview: an /assets/* path that is not in public/ answers 404. Vite's SPA fallback would answer 200 text/html
+ *  (index.html), so a missing .json or .glb fails later as a parse error, far from the cause. Pages keep the fallback. */
+function missingAssets404(): Plugin {
+  const notFound = (url: string | undefined) => {
+    const path = decodeURIComponent((url ?? "").split("?")[0]);
+    return path.startsWith("/assets/") && !existsSync(join("public", path));
+  };
+  const handler = (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    if (!notFound(req.url)) return next();
+    res.statusCode = 404;
+    res.end("Not Found");
+  };
+  return {
+    name: "pb-missing-assets-404",
+    configureServer(s: ViteDevServer) { s.middlewares.use(handler); },
+    configurePreviewServer(s: PreviewServer) { s.middlewares.use(handler); },
+  };
+}
+
 /**a VITE_* value lands in the public bundle (import.meta.env), so a static TURN credential must never be
  *  one. The client no longer reads VITE_TURN_* (src/p2p/ice.ts: TURN only comes from /signal); a build that still sets them fails. */
 function noStaticTurn(): Plugin {
@@ -70,7 +90,7 @@ function noStaticTurn(): Plugin {
 export default defineConfig(({ mode }) => ({
   root: ".",
   publicDir: mode === "prod" ? false : "public",
-  plugins: mode === "prod" ? [noStaticTurn(), publicWithoutAssets(), hashedAssets()] : [noStaticTurn(), hashedAssets()],
+  plugins: mode === "prod" ? [noStaticTurn(), publicWithoutAssets(), hashedAssets()] : [noStaticTurn(), hashedAssets(), missingAssets404()],
   server: {
     host: "0.0.0.0",
     port: 8000,

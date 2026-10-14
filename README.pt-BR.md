@@ -23,6 +23,10 @@ Port web do Point Blank (cliente Point Blank Cross) para o navegador. O cliente 
 
 O ffmpeg vem com `npm install` (pacote `ffmpeg-static`). Não instale à parte.
 
+## Obtendo o cliente
+
+Este repositório não inclui o cliente do Point Blank. Os arquivos são da Zepetto. Para obter uma cópia, pesquise `PointBlank Cross` no YouTube e encontre uma instalação que você tenha o direito de usar. Coloque em `Clients/PBCross` (passo 3). Não há links de download aqui.
+
 ## Estrutura de pastas
 
 Você precisa de duas pastas lado a lado:
@@ -73,8 +77,9 @@ npm run pbx -- export all --client cross --dry-run   # lista os passos e não gr
 npm run pbx -- export all --client cross             # roda os passos em ordem
 ```
 
-- Tempo e tamanho: o export leva horas e ocupa vários GB. Não medimos o tempo exato. Depende da máquina e do cliente.
+- Tempo e tamanho: cerca de 20-25 minutos para o cliente Cross (21 minutos medidos em uma máquina). Os assets ocupam cerca de 5 GB em `public/assets/`, e o exportador guarda cerca de 2 GB de snapshots em `.asset-snapshots/`. Você pode apagar `.asset-snapshots/` para liberar o espaço.
 - Onde grava: `public/assets/` e `extracted/`. Ambos são git-ignored. O cliente é só lido, nunca alterado.
+- Os passos `titles` e `headgear` leem os dados do servidor incluídos neste repositório (`server/runtime/` e `db/init/001_init.sql`). Não precisam de outra pasta do servidor.
 - Passos sem o cliente necessário são pulados e listados no resumo.
 - Se um passo falhar, o `pbx` diz o nome dele. Corrija a causa e retome com `npm run pbx -- export all --client cross --from <passo>`.
 - Ajuda completa: `npm run pbx -- help`. Documentação do exportador: README de `pb-extract-tools`.
@@ -198,6 +203,10 @@ Os smokes em `scripts/dev/` e `src/**/dev/` importam o código do cliente. Algun
 | 39290 | Auth (protocolo TCP do cliente) |
 | 39291-39293 | Game, um por canal (TCP) |
 | 5433 | Postgres (Docker, só `127.0.0.1`) |
+
+## Outros clientes
+
+As ferramentas e o jogo foram feitos e testados com o Point Blank Cross. Outros clientes do Point Blank usam os mesmos formatos i3Engine, então podem ser suportados adaptando as ferramentas em `pb-extract-tools` e o código do jogo. Assistentes de código com IA podem ajudar bastante nisso: aponte para este README, os comandos do exportador `pbx`, os formatos dos packs e a pasta do seu cliente.
 
 ## Licença
 
