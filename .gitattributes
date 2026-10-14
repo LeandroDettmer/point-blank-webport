@@ -1,0 +1,4 @@
+# server data files are parsed byte-for-byte: never rewrite line endings
+*.hex -text
+*.i3* binary
+*.dll binary

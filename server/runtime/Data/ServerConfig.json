@@ -1,0 +1,30 @@
+{
+  "Server": [
+    {
+      "ConfigId": "1",
+      "BuildId": "MMFnru/FIdNea2hnWVhOqw==",
+      "ChannelOnlyGM": "false",
+      "EnableMissions": "true",
+      "AccessUFL": "false",
+      "UserFileList": "c9bb7c4f004ede8ed47e11ca58721167",
+      "ClientVersion": "122.0",
+      "EnableGiftSystem": "true",
+      "EnableClan": "true",
+      "EnableTicket": "true",
+      "EnablePlaytime": "true",
+      "EnableTags": "true",
+      "EnableBlood": "true",
+      "ExitURL": "",
+      "ShopURL": "https://www.google.com/",
+      "OfficialSteam": "http://inbill.fps-pb.com/FillUp/Steam/SteamUserAuth.aspx",
+      "OfficialBannerEnabled": "true",
+      "OfficialBanner": "https://i.pinimg.com/736x/81/4f/2a/814f2abce1d9a4a24905c9737e3ba88d.jpg",
+      "OfficialAddress": "",
+      "ChatAnnoucementColor": "4587513",
+      "ChannelAnnoucementColor": "427943",
+      "ChatAnnountcement": "Tyger Tyger, burning bright, In the forests of the night",
+      "ChannelAnnouncement": "Tyger Tyger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?\nIn what distant deeps or skies.\nBurnt the fire of thine eyes?\nOn what wings dare he aspire?\nWhat the hand, dare seize the fire?\nAnd what shoulder, & what art,\nCould twist the sinews of thy heart?\nAnd when thy heart began to beat\nWhat dread hand? & what dread feet?\nWhat the hammer? what the chain\nIn what furnace was thy brain?\nWhat the anvil? what dread grasp\nDare its deadly terrors clasp!",
+      "Showroom": "12"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# Local Postgres for the server (the only service here; the server runs on the host with `npm run dev:all`).
+# Port 5433 on 127.0.0.1 only. The first start of an empty volume runs init/001_init.sql (schema + game data, no accounts).
+# To reset the database: docker compose down -v (removes the volume), then start again.
+# Defaults match server/runtime/Config/Settings.ini [Database] (postgres / postgres). Change them there and in PB_DB_* env if you want.
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PB_DB_NAME:-pb}
+      POSTGRES_USER: ${PB_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${PB_DB_PASS:-postgres}
+    ports:
+      - "127.0.0.1:${PB_DB_PORT:-5433}:5432"
+    volumes:
+      - pb-postgres-data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PB_DB_USER:-postgres} -d ${PB_DB_NAME:-pb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pb-postgres-data:

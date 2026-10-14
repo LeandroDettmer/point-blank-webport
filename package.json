@@ -1,0 +1,37 @@
+{
+  "name": "point-blank-webport",
+  "private": true,
+  "license": "MIT",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:all": "node scripts/dev-all.mjs",
+    "dev:all:nowatch": "node scripts/dev-all.mjs --no-watch",
+    "dev:alt": "node scripts/vite-alt.mjs",
+    "status": "node scripts/dev-all.mjs --status",
+    "build": "tsc --noEmit && vite build",
+    "build:prod": "tsc --noEmit && vite build --mode prod",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:net": "node --test \"src/net/test/*.test.ts\"",
+    "test:p2p": "node --test src/host/test/matchCore.test.ts src/host/test/crossRules.test.ts && node src/p2p/test/p2p2peers.test.ts && node src/p2p/test/p2pfailover.test.ts && node src/p2p/test/p2pHandoff.test.ts && node src/p2p/test/p2pbots.test.ts && node src/p2p/test/p2prejoin.test.ts",
+    "match-data": "node scripts/pbx.mjs export match-data",
+    "assets:ogg": "node scripts/pbx.mjs sound convert && node scripts/pbx.mjs sound verify",
+    "assets:snapshot": "node scripts/pbx.mjs snapshot",
+    "assets:verify": "node scripts/pbx.mjs verify assets",
+    "pbx": "node scripts/pbx.mjs"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@types/three": "^0.169.0",
+    "ffmpeg-static": "^5.3.0",
+    "node-datachannel": "^0.33.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8"
+  }
+}

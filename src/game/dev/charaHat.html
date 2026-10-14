@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- Dev page (not shipped): costume characters with their own headwear vs the family default helmet (charEquip.ts).
+     npx vite, then open /src/game/dev/charaHat.html?items=601099,601316&head=701020 -->
+<html><head><meta charset="utf-8"><title>chara hat</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{position:absolute;inset:0}#info{position:absolute;left:8px;bottom:8px;color:#0f0;font:12px monospace;z-index:9;white-space:pre}</style>
+</head><body><div id="v"></div><div id="info">loading</div>
+<script>addEventListener("error",(e)=>document.getElementById("info").textContent="ERR "+e.message);addEventListener("unhandledrejection",(e)=>document.getElementById("info").textContent="REJ "+(e.reason&&e.reason.stack||e.reason));</script>
+<script type="module">
+import * as THREE from "three";
+import { preloadChara, createCharVisual } from "/src/game/charModel.ts";
+
+const q = new URLSearchParams(location.search);
+const items = (q.get("items") ?? "601099,601316").split(",").map(Number);
+const head = Number(q.get("head") ?? "701020");
+const yaw = Number(q.get("yaw") ?? "0");
+const close = q.has("close");
+const info = document.getElementById("info");
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById("v").appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2a3440);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 2.5));
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.05, 100);
+const lines = [];
+const vis = [];
+let x = 0;
+for (const id of items) {
+  const team = String(id).startsWith("602") ? 1 : 0;
+  const name = await preloadChara(id, team);
+  // pairs: without a head item (helmet hidden), then with `head` equipped (helmet slot drawn)
+  for (const eq of [{}, { head }]) {
+    const v = createCharVisual(team, { itemId: id, equip: eq });
+    v.setHelmet(!!eq.head);
+    scene.add(v.root);
+    vis.push([v, x]);
+    lines.push(`${id} ${name} -> ${v.charaName} head=${eq.head ?? 0} x=${x}`);
+    x += 0.7;
+  }
+}
+for (let i = 0; i < 90; i++) {
+  for (const [v, px] of vis) v.update(1 / 60, { pos: new THREE.Vector3(px, 0, 0), yaw, pitch: 0, vel: new THREE.Vector3(), crouch: false, grounded: true, alive: true });
+  await new Promise((r) => setTimeout(r, 16));
+}
+const mid = (x - 0.7) / 2;
+if (close) { cam.position.set(mid, 1.75, -(x * 0.9 + 0.3)); cam.lookAt(mid, 1.62, 0); } else { cam.position.set(mid, 1.62, -(x * 0.9 + 0.8)); cam.lookAt(mid, 1.45, 0); }
+renderer.render(scene, cam);
+info.textContent = lines.join("\n");
+document.title = "done";
+</script></body></html>

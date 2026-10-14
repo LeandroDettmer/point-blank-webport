@@ -1,0 +1,20 @@
+# Chat word filter (server-ts chatGuard.ts): one word or phrase per line. Whole words only, case and accent blind; a match is replaced by "*".
+# Same file format as Nicks.txt (the nick filter). Edit freely; restart the server to reload.
+porra
+caralho
+puta
+puto
+fdp
+vsf
+vtnc
+arrombado
+buceta
+cuzao
+viado
+merda
+filho da puta
+fuck
+shit
+bitch
+nigger
+faggot

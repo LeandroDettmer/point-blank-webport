@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Blackout</title>
+    <link rel="icon" type="image/png" href="/assets/ui/cross/brand/icon.png" />
+    <link rel="apple-touch-icon" href="/assets/ui/cross/brand/icon.png" />
+    <meta name="theme-color" content="#000000" />
+    <style>
+      *, *::before, *::after { cursor: url(/pb-cursor.cur) 0 0, default !important; } /* Gui/3dgarro.cur (PointBlank.exe) */
+      html, body { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
+      #app { position: relative; width: 100vw; height: 100vh; }
+      canvas { display: block; }
+      #hud {
+        position: absolute; top: 8px; left: 8px; color: #0f0;
+        font-family: monospace; font-size: 12px; line-height: 1.4;
+        text-shadow: 0 0 2px #000; pointer-events: none; white-space: pre;
+      }
+      #crosshair {
+        position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+        margin: -3px 0 0 -3px; border-radius: 50%; background: #fff;
+        mix-blend-mode: difference; pointer-events: none;
+      }
+      #blocker {
+        position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.6); color: #fff; font-family: sans-serif; cursor: pointer;
+      }
+      /* "Clique para jogar" panel (markup in src/main.ts) */
+      #blocker .ov-panel { text-align: center; background: rgba(16,16,16,.78); padding: 22px 34px 18px; border: 1px solid #8e8e8e; border-radius: 6px; box-shadow: 0 0 28px rgba(0,0,0,.6); max-width: min(92vw, 620px); box-sizing: border-box; }
+      #blocker .ov-logo { margin: 0 0 6px; }
+      #blocker .ov-logo img { height: 84px; }
+      #blocker .ov-meta { font-size: 15px; letter-spacing: 1px; color: #f0c040; text-transform: uppercase; margin-bottom: 14px; }
+      #blocker .ov-meta .ov-sep { margin: 0 8px; opacity: .5; color: #888; }
+      #blocker .ov-play { display: block; margin: 0 auto 18px; font: bold 20px/1 Arial, sans-serif; letter-spacing: 1px; padding: 12px 36px; color: #1a1a1a; background: linear-gradient(180deg, #ffe28a, #f0c040); border: 1px solid #a87e10; border-radius: 4px; box-shadow: 0 2px 0 #8a6408; }
+      #blocker .ov-play:hover { background: linear-gradient(180deg, #fff0b0, #ffd863); }
+      #blocker .ov-controls { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 10px 22px; text-align: left; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.15); }
+      @media (max-width: 560px) { #blocker .ov-controls { grid-template-columns: 1fr; } }
+      #blocker .ov-group h3 { margin: 0 0 4px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #fc6; }
+      #blocker .ov-row { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 1px 0; }
+      #blocker .ov-key { flex: 0 0 84px; text-align: center; padding: 2px 6px; background: #1d1f20; border: 1px solid #666; border-radius: 3px; font-size: 11px; font-weight: bold; color: #eee; white-space: nowrap; }
+      #blocker .ov-leave { margin-top: 14px; padding: 6px 16px; font: inherit; font-size: 12px; background: #222; color: #eee; border: 1px solid #777; border-radius: 3px; }
+      #blocker .ov-leave:hover { border-color: #f0c040; }
+      #blocker.hidden { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="hud"></div>
+      <div id="crosshair"></div>
+      <div id="blocker"></div>
+    </div>
+    <script type="module" src="/src/boot.ts"></script>
+  </body>
+</html>

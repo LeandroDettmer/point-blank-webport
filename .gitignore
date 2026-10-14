@@ -1,0 +1,36 @@
+# dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# game client and extracted assets: never committed (see README, "Assets")
+/Clients/
+/public/assets/
+/extracted/
+/out/
+/.asset-snapshots/
+
+# local env, logs, database files
+.env
+.env.*
+!server/.env.example
+*.log
+*.db
+*.db-shm
+*.db-wal
+
+# dev harness output and screenshots
+**/dev/out/
+src/lobby/core/dev/shop-live.json
+test-results/
+playwright-report/
+screenshots/
+shots/
+
+# local editor/agent settings
+
+# OS / editor
+.DS_Store
+Thumbs.db
+nul

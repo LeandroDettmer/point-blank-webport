@@ -1,0 +1,60 @@
+<!doctype html>
+<!-- Dev page (not shipped): HELMET PROTECTION evidence. A character with the default helmet (head 701002), the helmet
+     knocked off by a head hit (helmetDrop.ts, real equip GLB) and the victim's kill_message.i3i banner (PbHud).
+     npx vite, then open /src/game/dev/helmet.html (?t=<seconds after the hit>) -->
+<html><head><meta charset="utf-8"><title>helmet drop</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{position:absolute;inset:0}#pbhud .pbhud-box>*:not(.pbhud-killsprite){display:none}#info{position:absolute;left:8px;bottom:8px;color:#0f0;font:12px monospace;z-index:9}</style>
+</head><body><div id="v"></div><div id="info">loading</div>
+<script>addEventListener("error",(e)=>document.getElementById("info").textContent="ERR "+e.message);addEventListener("unhandledrejection",(e)=>document.getElementById("info").textContent="REJ "+(e.reason&&e.reason.stack||e.reason));</script>
+<script type="module">
+import * as THREE from "three";
+import RAPIER from "@dimforge/rapier3d-compat";
+import { preloadChara, createCharVisual } from "/src/game/charModel.ts";
+import { HelmetDrops } from "/src/game/helmetDrop.ts";
+import { PbHud } from "/src/game/pbHud/PbHud.ts";
+import { KILL_MARKS } from "/src/game/pbHud/killmarks.ts";
+
+const T = Number(new URLSearchParams(location.search).get("t") ?? "0.45");
+const info = document.getElementById("info");
+await RAPIER.init();
+const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0));
+world.step();
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(innerWidth, innerHeight);
+document.getElementById("v").appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2a3440);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404040, 2.5));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({ color: 0x6b6b60 }));
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+scene.add(new THREE.GridHelper(40, 40, 0x222222, 0x444444));
+const cam = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.05, 100);
+cam.position.set(4.2, 1.9, 1.0);
+cam.lookAt(-0.4, 0.8, -1.0);
+
+const name = await preloadChara(null, 1);
+const eq = { head: 701002 };
+const on = createCharVisual(1, { equip: eq }); // left: helmet on
+const hit = createCharVisual(1, { equip: eq }); // right: the one that got hit
+on.root.position.set(-1.2, 0, 0);
+scene.add(on.root, hit.root);
+const pose = (v, x) => v.update(1 / 60, { pos: new THREE.Vector3(x, 0, 0), yaw: -Math.PI / 2, pitch: 0, vel: new THREE.Vector3(), crouch: false, grounded: true, alive: true });
+for (let i = 0; i < 90; i++) { pose(on, -1.2); pose(hit, 0); await new Promise((r) => setTimeout(r, 16)); }
+scene.updateMatrixWorld(true);
+const src = hit.helmetSource();
+const drops = new HelmetDrops(scene, world, RAPIER);
+if (src) drops.spawn(src, new THREE.Vector3(0, 0, -1)); // shot from +z
+hit.setHelmet(false);
+for (let t = 0; t < T; t += 1 / 60) drops.update(1 / 60);
+await new Promise((r) => setTimeout(r, 600)); // helmet GLB load
+drops.update(0);
+const hud = new PbHud(document.body);
+for (let i = 0; i < 200 && !hud.ready; i++) await new Promise((r) => setTimeout(r, 50));
+hud.spriteMark(KILL_MARKS.helmetProtection, false);
+renderer.render(scene, cam);
+const s = drops.debugState()[0];
+info.textContent = `chara=${name} helmetSource=${!!src} t=${T}s drop=${s ? s.pos.map((n) => n.toFixed(2)).join(",") : "none"} resting=${s?.resting} loaded=${s?.loaded} hud=${hud.ready}`;
+document.title = "done";
+</script></body></html>
