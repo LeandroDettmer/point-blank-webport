@@ -1,49 +1,51 @@
 # Point Blank web port
 
-Port web do Point Blank (cliente Point Blank Cross) para o navegador. O cliente é TypeScript + Vite + three.js + Rapier. O servidor (`server`) fala o protocolo binário original e usa Postgres. As partidas rodam peer-to-peer (WebRTC). O servidor cuida de login, lobby, salas, itens e progressão.
+Read this in Portuguese: [README.pt-BR.md](README.pt-BR.md).
 
-> **Aviso legal.** Este repositório tem só código nosso: cliente, servidor, esquema do banco e scripts. Não tem assets, executável nem dados de jogo extraídos. O código deste projeto é licenciado sob a [MIT](LICENSE).
+A web port of Point Blank (the Point Blank Cross client) for the browser. The client is TypeScript + Vite + three.js + Rapier. The server (`server`) speaks the original binary protocol and uses Postgres. Matches run peer-to-peer (WebRTC). The server handles login, lobby, rooms, items and progression.
+
+> **Legal notice.** This repository contains only our code: client, server, database schema and scripts. It has no assets, no executable and no extracted game data. The code of this project is licensed under the [MIT License](LICENSE).
 >
-> **Point Blank, seus assets, seu protocolo de rede e seus dados de jogo pertencem à Zepetto e não são cobertos pela licença MIT.** Isso vale também para `server/runtime/Config/` e `server/runtime/Data/`, que trazem dados do jogo mantidos como estão.
+> **Point Blank, its assets, its network protocol and its game data belong to Zepetto and are not covered by the MIT license.** This also applies to `server/runtime/Config/` and `server/runtime/Data/`, which contain game data kept as is.
 >
-> Use o projeto com um cliente que você tem direito de usar. Não publique assets extraídos. Este projeto não é afiliado nem endossado pela Zepetto.
+> Use the project with a client you have the right to use. Do not publish extracted assets. This project is not affiliated with or endorsed by Zepetto.
 
-## Requisitos
+## Requirements
 
-| Item | Observação |
+| Item | Notes |
 |---|---|
-| Node.js 22.18 ou mais novo | O servidor roda arquivos `.ts` direto (type stripping). Testado com Node 24. |
-| npm | Vem com o Node. |
-| Git | Para clonar os dois repositórios. |
-| Docker | Docker Desktop (Windows/macOS) ou Docker Engine. Sobe o Postgres 16 em `127.0.0.1:5433`. Precisa estar rodando antes do `dev:all`. |
-| Cliente Point Blank Cross | Uma pasta chamada `PBCross`, com `PointBlank.exe` e `Pack/`. Você precisa ter o cliente. |
-| Python 3 + `capstone` | Só para as ferramentas de engenharia reversa do `pb-extract-tools`. Não é necessário para jogar. |
+| Node.js 22.18 or newer | The server runs `.ts` files directly (type stripping). Tested with Node 24. |
+| npm | Comes with Node. |
+| Git | To clone the two repositories. |
+| Docker | Docker Desktop (Windows/macOS) or Docker Engine. Runs Postgres 16 on `127.0.0.1:5433`. Must be running before `dev:all`. |
+| Point Blank Cross client | A folder named `PBCross`, with `PointBlank.exe` and `Pack/`. You need your own copy of the client. |
+| Python 3 + `capstone` | Only for the reverse-engineering tools in `pb-extract-tools`. Not needed to play. |
 
-O ffmpeg vem com `npm install` (pacote `ffmpeg-static`). Não instale à parte.
+ffmpeg comes with `npm install` (the `ffmpeg-static` package). Do not install it separately.
 
-## Estrutura de pastas
+## Folder layout
 
-Você precisa de duas pastas lado a lado:
+You need two folders side by side:
 
 ```
-pasta-de-projetos/
-├── point-blank-webport/     este repositório
-│   └── Clients/PBCross/     seu cliente (criado por você, git-ignored)
-└── pb-extract-tools/        exportador de assets (outro repositório)
+projects-folder/
+├── point-blank-webport/     this repository
+│   └── Clients/PBCross/     your client (created by you, git-ignored)
+└── pb-extract-tools/        asset exporter (another repository)
 ```
 
-## Passo a passo, do zero
+Steps 1 and 2 run in `projects-folder/`. From step 3 on, the current directory is `point-blank-webport/`.
 
-Os passos 1 e 2 rodam na pasta `pasta-de-projetos/`. Dos passos 3 em diante, o diretório atual é `point-blank-webport/`.
+## Step by step, from scratch
 
-**1. Clone os dois repositórios**
+**1. Clone both repositories**
 
 ```sh
-git clone <url deste repositório> point-blank-webport
+git clone <url of this repository> point-blank-webport
 git clone https://github.com/LeandroDettmer/pb-extract-tools-public pb-extract-tools
 ```
 
-**2. Instale as dependências**
+**2. Install the dependencies**
 
 ```sh
 cd point-blank-webport
@@ -52,171 +54,152 @@ npm --prefix server install
 npm --prefix ../pb-extract-tools install
 ```
 
-**3. Coloque o cliente**
+**3. Place the client**
 
-Copie sua instalação do Point Blank Cross para `point-blank-webport/Clients/PBCross/`. Tem que existir o arquivo `Clients/PBCross/PointBlank.exe`. O nome da pasta precisa ser exatamente `PBCross`. Se o cliente estiver em outro lugar, aponte com a variável `PB_CLIENTS` (pasta que contém `PBCross`).
+Copy your Point Blank Cross installation to `point-blank-webport/Clients/PBCross/`. The file `Clients/PBCross/PointBlank.exe` must exist. The folder name must be exactly `PBCross`. If the client is somewhere else, point the `PB_CLIENTS` variable to it (the folder that contains `PBCross`).
 
-**4. Confira o ambiente**
+**4. Check the environment**
 
 ```sh
 npm run pbx -- doctor
 ```
 
-Mostra Node, dependências, ffmpeg, o cliente encontrado e quais grupos de comando podem rodar. Confira que o Point Blank Cross aparece como encontrado.
+Shows Node, dependencies, ffmpeg, the client found, and which command groups can run. Check that Point Blank Cross shows as found.
 
-**5. Gere os assets**
+**5. Generate the assets**
 
 ```sh
-npm run pbx -- export all --client cross --dry-run   # lista os passos e não grava nada
-npm run pbx -- export all --client cross             # roda os passos em ordem
-npm run assets:ogg                  # versões OGG dos sons WAV
+npm run pbx -- export all --client cross --dry-run   # lists the steps and writes nothing
+npm run pbx -- export all --client cross             # runs the steps in order
+npm run assets:ogg                  # OGG versions of the WAV sounds
 ```
 
-- Tempo e tamanho: o export leva horas e ocupa vários GB. Não medimos o tempo exato. Depende da máquina e do cliente.
-- Onde grava: `public/assets/` e `extracted/`. Ambos são git-ignored. O cliente é só lido, nunca alterado.
-- Passos sem o cliente necessário são pulados e listados no resumo.
-- Se um passo falhar, o `pbx` diz o nome dele. Corrija a causa e retome com `npm run pbx -- export all --client cross --from <passo>`.
-- Ajuda completa: `npm run pbx -- help`. Documentação do exportador: README de `pb-extract-tools`.
+- Time and size: the export takes hours and several GB. We have not measured the exact time. It depends on your machine and the client.
+- Output: `public/assets/` and `extracted/`. Both are git-ignored. The client is only read, never modified.
+- Steps that need a missing client are skipped and listed in the summary.
+- If a step fails, `pbx` shows its name. Fix the cause and resume with `npm run pbx -- export all --client cross --from <step>`.
+- Full help: `npm run pbx -- help`. Exporter documentation: the README of `pb-extract-tools`.
 
-**6. Configure o servidor (opcional)**
+**6. Configure the server (optional)**
 
-Os padrões já funcionam com o Docker do próximo passo. Para mudar algo, copie o modelo e edite:
+The defaults already work with the Docker setup in the next step. To change something, copy the template and edit it:
 
 ```sh
 cp server/.env.example server/.env.local
 ```
 
-A seção [Variáveis de ambiente](#variáveis-de-ambiente) explica cada uma.
+The [Environment variables](#environment-variables) section explains each one.
 
-**7. Suba a pilha**
+**7. Start the stack**
 
 ```sh
 npm run dev:all
 ```
 
-O comando:
+The command:
 
-- sobe o Postgres pelo Docker (`db/docker-compose.yml`). Se o volume ainda não existe (primeira subida), o banco é criado a partir de `db/init/001_init.sql`: esquema e dados de jogo, sem contas;
-- inicia o servidor (portas 39290, 39291-39293 e 8090);
-- inicia o Vite (porta 8000).
+- starts Postgres with Docker (`db/docker-compose.yml`). If the volume does not exist yet (first start), the database is created from `db/init/001_init.sql`: schema and game data, no accounts;
+- starts the server (ports 39290, 39291-39293 and 8090);
+- starts Vite (port 8000).
 
-O servidor reinicia sozinho quando muda `server/src` ou `server/runtime/Config`. `Ctrl+C` encerra tudo. `npm run dev:all:nowatch` desliga essa observação. `npm run status` mostra quais portas estão em uso.
+The server restarts by itself when `server/src` or `server/runtime/Config` changes. `Ctrl+C` stops everything. `npm run dev:all:nowatch` turns off this watching. `npm run status` shows which ports are in use.
 
-**8. Entre no jogo**
+**8. Enter the game**
 
-1. Abra http://localhost:8000.
-2. Crie uma conta na tela de registro do jogo. Ou pela API:
+1. Open http://localhost:8000.
+2. Create an account on the game's registration screen. Or through the API:
 
    ```sh
    curl -X POST http://localhost:8090/api/register -H "content-type: application/json" -d '{"username":"player1","password":"secret1"}'
    curl -X POST http://localhost:8090/api/login    -H "content-type: application/json" -d '{"username":"player1","password":"secret1"}'
    ```
 
-3. Usuário: de 4 a 16 caracteres (letras, números e `_`). Senha: de 6 a 64 caracteres.
-4. Crie uma sala no modo bots (sala com IA) e jogue contra os bots.
+3. Username: 4 to 16 characters (letters, numbers and `_`). Password: 6 to 64 characters.
+4. Create a room in bot mode (room with AI) and play against the bots.
 
-O banco começa sem contas. Não há usuário de teste pronto: a primeira conta é a que você criar.
+The database starts with no accounts. There is no ready-made test user: the first account is the one you create.
 
-**Resetar o banco.** O `db/init/001_init.sql` só roda quando o volume `pbwebport_pb-postgres-data` (ou o volume do projeto que você usar) está vazio. Para começar do zero, pare o servidor e remova o volume:
+**Resetting the database.** `db/init/001_init.sql` only runs when the volume `pbwebport_pb-postgres-data` (or the volume of the project name you use) is empty. To start from scratch, stop the server and remove the volume:
 
 ```sh
 cd db
-docker compose -p pbwebport down -v   # apaga o volume: contas, personagens e progresso
+docker compose -p pbwebport down -v   # deletes the volume: accounts, characters and progress
 cd ..
-npm run dev:all                    # recria o banco a partir de db/init/001_init.sql
+npm run dev:all                    # recreates the database from db/init/001_init.sql
 ```
 
-Se você subiu o compose com outro nome de projeto (`-p`), use o mesmo nome no `down -v`. `docker volume ls` lista os volumes.
+If you started the compose file with another project name (`-p`), use the same name in `down -v`. `docker volume ls` lists the volumes.
 
-## Variáveis de ambiente
+## Environment variables
 
-O servidor lê `server/.env.local` (se existir) e depois as variáveis do ambiente. Variável do ambiente vence o arquivo. Todas são opcionais. A lista completa com comentários está em `server/.env.example`.
+The server reads `server/.env.local` (if it exists) and then the environment variables. An environment variable wins over the file. All of them are optional. The full list with comments is in `server/.env.example`.
 
-| Variável | Padrão | Para que serve |
+| Variable | Default | Purpose |
 |---|---|---|
-| `PB_DB_HOST` | `127.0.0.1` | Host do Postgres. |
-| `PB_DB_PORT` | `5433` | Porta do Postgres. Tem que bater com a porta publicada pelo Docker. |
-| `PB_DB_NAME` | `pb` | Nome do banco. |
-| `PB_DB_USER` / `PB_DB_PASS` | `postgres` / `postgres` | Usuário e senha. Só para uso local. |
-| `PB_DB_URL` | vazio | URL completa (`postgres://usuario:senha@host:porta/banco`). Substitui host, porta, nome, usuário e senha. |
-| `PB_DB_SSL` / `PB_DB_SSL_STRICT` | `0` / `0` | `1` liga TLS no Postgres (bancos hospedados). `PB_DB_SSL_STRICT=1` também confere o certificado. |
-| `PB_WEB_PORT` | `8090` | Porta do front web (`/tcp`, `/signal`, `/api`, `/health`). |
-| `PB_ADVERTISE_HOST` | vazio | Host que a lista de servidores envia ao cliente. Vazio usa o host do banco (`127.0.0.1`). Ponha seu IP da rede se outra máquina vai jogar. |
-| `TURN_URLS` / `TURN_USERNAME` / `TURN_CREDENTIAL` | vazio | Servidor TURN para partidas P2P atrás de NAT restrito. Sem ele, o projeto usa só STUN público. |
+| `PB_DB_HOST` | `127.0.0.1` | Postgres host. |
+| `PB_DB_PORT` | `5433` | Postgres port. Must match the port published by Docker. |
+| `PB_DB_NAME` | `pb` | Database name. |
+| `PB_DB_USER` / `PB_DB_PASS` | `postgres` / `postgres` | User and password. For local use only. |
+| `PB_DB_URL` | empty | Full URL (`postgres://user:password@host:port/database`). Replaces host, port, name, user and password. |
+| `PB_DB_SSL` / `PB_DB_SSL_STRICT` | `0` / `0` | `1` turns on TLS to Postgres (hosted databases). `PB_DB_SSL_STRICT=1` also checks the certificate. |
+| `PB_WEB_PORT` | `8090` | Port of the web front (`/tcp`, `/signal`, `/api`, `/health`). |
+| `PB_ADVERTISE_HOST` | empty | Host that the server list sends to the client. Empty uses the database host (`127.0.0.1`). Set your LAN IP if another machine will play. |
+| `TURN_URLS` / `TURN_USERNAME` / `TURN_CREDENTIAL` | empty | TURN server for P2P matches behind a strict NAT. Without it, the project uses only public STUN. |
 
-Para trocar a porta do Postgres, mude nos dois lugares: `PB_DB_PORT` no ambiente do Docker (o `dev:all` roda o compose a partir de `db/`, então use um arquivo `db/.env` ou a variável do shell) e `PB_DB_PORT` em `server/.env.local`.
+To change the Postgres port, change it in both places: `PB_DB_PORT` in the Docker environment (`dev:all` runs the compose file from `db/`, so use a `db/.env` file or a shell variable) and `PB_DB_PORT` in `server/.env.local`.
 
-Variáveis de desenvolvimento usadas pelos scripts (você não precisa definir):
+Development variables used by the scripts (you do not need to set them):
 
-- `PB_TOOLS`: caminho do `pb-extract-tools`. Padrão: pasta irmã `../pb-extract-tools`.
-- `PB_CLIENTS`: pasta que contém `PBCross`. Padrão: `Clients/` na raiz do repositório.
+- `PB_TOOLS`: path to `pb-extract-tools`. Default: the sibling folder `../pb-extract-tools`.
+- `PB_CLIENTS`: folder that contains `PBCross`. Default: `Clients/` at the root of the repository.
 
-## Problemas comuns
+## Common problems
 
-- **Porta em uso** (8000, 8090, 39290-39293 ou 5433). Rode `npm run status` para ver quem usa. O `dev:all` encerra processos antigos deste repositório. Se a porta for de outro programa, ele para e avisa: feche o programa ou troque a porta.
-- **`docker compose failed`**. O Docker não está rodando. Abra o Docker Desktop, espere ele iniciar e rode `npm run dev:all` de novo.
-- **Postgres não sobe na 5433** porque outro banco usa a porta. Troque `PB_DB_PORT` (ver acima).
-- **`pbx doctor` não encontra o Point Blank Cross**. A pasta tem outro nome ou está fora de `Clients/`. Renomeie para `PBCross` ou defina `PB_CLIENTS`.
-- **Jogo abre com telas vazias ou arquivos 404**. Um passo do export falhou ou foi pulado. Veja o resumo do `pbx` e rode de novo com `--from`.
-- **`ffmpeg` ausente ou `ffmpeg-static` sem binário**. O pacote baixa o binário no `npm install`. Se o download falhou (rede ou proxy), rode `npm install` de novo.
-- **`ERR_UNKNOWN_FILE_EXTENSION` com `.ts`**. Seu Node é mais antigo que 22.18. Atualize.
-- **`node-datachannel` falha ao instalar**. Ele é um módulo nativo, usado nos testes P2P. Confira a versão do Node e as ferramentas de build do sistema.
+- **Port in use** (8000, 8090, 39290-39293 or 5433). Run `npm run status` to see who uses it. `dev:all` stops old processes of this repository. If the port belongs to another program, it stops and warns you: close that program or change the port.
+- **`docker compose failed`**. Docker is not running. Open Docker Desktop, wait for it to start, and run `npm run dev:all` again.
+- **Postgres does not start on 5433** because another database uses the port. Change `PB_DB_PORT` (see above).
+- **`pbx doctor` does not find Point Blank Cross**. The folder has another name or is outside `Clients/`. Rename it to `PBCross` or set `PB_CLIENTS`.
+- **The game opens with empty screens or 404 files**. An export step failed or was skipped. Check the `pbx` summary and run again with `--from`.
+- **`ffmpeg` missing or `ffmpeg-static` without a binary**. The package downloads the binary during `npm install`. If the download failed (network or proxy), run `npm install` again.
+- **`ERR_UNKNOWN_FILE_EXTENSION` with `.ts`**. Your Node is older than 22.18. Update it.
+- **`node-datachannel` fails to install**. It is a native module, used by the P2P tests. Check your Node version and the system build tools.
 
-## Testes
+## Tests
 
 ```sh
-npm run typecheck            # tipos do cliente
-npm --prefix server run typecheck  # tipos do servidor
-npm --prefix server test           # testes do servidor (alguns precisam do Postgres rodando)
-npm run test:net             # testes do protocolo do cliente
-npm run test:p2p             # partida P2P com servidor real (sobe servidores de teste)
+npm run typecheck            # client types
+npm --prefix server run typecheck  # server types
+npm --prefix server test           # server tests (some need Postgres running)
+npm run test:net             # client protocol tests
+npm run test:p2p             # P2P match with a real server (starts test servers)
 ```
 
-Os smokes em `scripts/dev/` e `src/**/dev/` importam o código do cliente. Alguns precisam dos assets gerados.
+The smoke scripts in `scripts/dev/` and `src/**/dev/` import client code. Some of them need the generated assets.
 
-## Estrutura do repositório
+## Repository layout
 
-| Caminho | O que é |
+| Path | What it is |
 |---|---|
-| `package.json`, `index.html`, `vite.config.ts`, `tsconfig.json` | cliente: dependências, scripts (`dev:all`, `pbx`, `status`, `test:net`) e build |
-| `src/` | cliente: jogo, armas, lobby, HUD, rede, host P2P |
-| `public/` | arquivos estáticos do cliente. `public/assets/` é gerado pelo `pbx` (git-ignored) |
-| `scripts/` | `dev-all.mjs` (supervisor), `pbx.mjs` (lança o exportador), smokes |
-| `server/` | servidor (projeto próprio): `src/` (Auth e Game TCP, front web WebSocket e `/api`, Postgres), `test/`, `tools/`, `package.json` |
-| `server/runtime/` | configuração e dados que o servidor lê (`Config/`, `Data/`). Dados do jogo, ver aviso legal |
-| `server/.env.example` | modelo de variáveis de ambiente do servidor |
-| `db/` | `docker-compose.yml` (só o Postgres) e `init/001_init.sql` (esquema e dados de jogo, criados na primeira subida do volume) |
-| `docs/ARCHITECTURE.md` | visão geral: cliente, servidor, banco e P2P |
+| `package.json`, `index.html`, `vite.config.ts`, `tsconfig.json` | client: dependencies, scripts (`dev:all`, `pbx`, `status`, `test:net`) and build |
+| `src/` | client: game, weapons, lobby, HUD, network, P2P host |
+| `public/` | static files of the client. `public/assets/` is generated by `pbx` (git-ignored) |
+| `scripts/` | `dev-all.mjs` (supervisor), `pbx.mjs` (starts the exporter), smoke scripts |
+| `server/` | server (its own project): `src/` (Auth and Game TCP, WebSocket web front and `/api`, Postgres), `test/`, `tools/`, `package.json` |
+| `server/runtime/` | configuration and data the server reads (`Config/`, `Data/`). Game data, see the legal notice |
+| `server/.env.example` | template of the server environment variables |
+| `db/` | `docker-compose.yml` (Postgres only) and `init/001_init.sql` (schema and game data, created on the first start of the volume) |
+| `docs/ARCHITECTURE.md` | overview: client, server, database and P2P |
 
-## Portas
+## Ports
 
-| Porta | O que é |
+| Port | What it is |
 |---|---|
-| 8000 | jogo (Vite, em desenvolvimento) |
-| 8090 | front web: `/tcp` e `/signal` (WebSocket), `/api/register`, `/api/login`, `/health` (HTTP) |
-| 39290 | Auth (protocolo TCP do cliente) |
-| 39291-39293 | Game, um por canal (TCP) |
-| 5433 | Postgres (Docker, só `127.0.0.1`) |
+| 8000 | game (Vite, in development) |
+| 8090 | web front: `/tcp` and `/signal` (WebSocket), `/api/register`, `/api/login`, `/health` (HTTP) |
+| 39290 | Auth (client TCP protocol) |
+| 39291-39293 | Game, one per channel (TCP) |
+| 5433 | Postgres (Docker, `127.0.0.1` only) |
 
-## Licença
+## License
 
-Código deste projeto: MIT, veja [LICENSE](LICENSE). Point Blank, seus assets, protocolo e dados de jogo: Zepetto, fora da MIT (ver aviso no topo).
-
----
-
-## English (summary)
-
-**What it is:** a browser port of Point Blank Cross. A TypeScript + Vite + three.js client and a TypeScript server (`server`) that speaks the original binary protocol on top of Postgres. Matches run peer-to-peer over WebRTC.
-
-**Legal:** the code in this repository is MIT (see [LICENSE](LICENSE)). Point Blank, its assets, its network protocol and its game data (including `server/runtime/Config/` and `server/runtime/Data/`) belong to Zepetto and are not covered by the MIT license. The repository contains no assets. You must use your own Point Blank Cross client.
-
-**Quick start:**
-
-1. Requirements: Node.js 22.18+, npm, Git, Docker (running), and your own Point Blank Cross client folder named `PBCross`.
-2. Clone this repository and `pb-extract-tools` side by side, then run `npm install` in the repo root, in `server` and in `pb-extract-tools`.
-3. Put the client at `Clients/PBCross/`. Check it with `npm run pbx -- doctor`.
-4. Export the assets: `npm run pbx -- export all --client cross` (hours, several GB). Then `npm run assets:ogg`.
-5. Optional: `cp server/.env.example server/.env.local`.
-6. Start everything: `npm run dev:all`. Open http://localhost:8000, register, create a bot room and play.
-
-Tests: `npm run typecheck`, `npm --prefix server test`, `npm run test:net`.
+The code of this project: MIT, see [LICENSE](LICENSE). Point Blank, its assets, protocol and game data: Zepetto, outside the MIT license (see the notice at the top).
