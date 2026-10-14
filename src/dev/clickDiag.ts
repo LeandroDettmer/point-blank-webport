@@ -1,5 +1,5 @@
 // Dev-only diagnostics (loaded by boot.ts when import.meta.env.DEV): reports as console.warn which element
-// receives each click, so the FiveDollars preview (which captures console warnings) shows what blocks the UI.
+// receives each click, so a preview that captures console warnings shows what blocks the UI.
 function describe(el: Element | null): string {
   if (!el) return "null";
   const h = el as HTMLElement;
