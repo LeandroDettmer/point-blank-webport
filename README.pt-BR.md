@@ -41,7 +41,7 @@ Os passos 1 e 2 rodam na pasta `pasta-de-projetos/`. Dos passos 3 em diante, o d
 **1. Clone os dois repositórios**
 
 ```sh
-git clone <url deste repositório> point-blank-webport
+git clone https://github.com/LeandroDettmer/point-blank-webport point-blank-webport
 git clone https://github.com/LeandroDettmer/pb-extract-tools-public pb-extract-tools
 ```
 
@@ -56,7 +56,7 @@ npm --prefix ../pb-extract-tools install
 
 **3. Coloque o cliente**
 
-Copie sua instalação do Point Blank Cross para `point-blank-webport/Clients/PBCross/`. Tem que existir o arquivo `Clients/PBCross/PointBlank.exe`. O nome da pasta precisa ser exatamente `PBCross`. Se o cliente estiver em outro lugar, aponte com a variável `PB_CLIENTS` (pasta que contém `PBCross`).
+Copie sua instalação do Point Blank Cross para `point-blank-webport/Clients/PBCross/`. Tem que existir o arquivo `Clients/PBCross/PointBlank.exe`. O nome da pasta precisa ser exatamente `PBCross`. Se o cliente estiver em outro lugar, aponte com a variável `PB_CLIENTS` (pasta que contém `PBCross`), por exemplo `set PB_CLIENTS=D:\Games\Clients` (cmd do Windows) ou `export PB_CLIENTS=/caminho/para/Clients` (bash), no mesmo terminal em que roda `npm run pbx`.
 
 **4. Confira o ambiente**
 
@@ -71,7 +71,6 @@ Mostra Node, dependências, ffmpeg, o cliente encontrado e quais grupos de coman
 ```sh
 npm run pbx -- export all --client cross --dry-run   # lista os passos e não grava nada
 npm run pbx -- export all --client cross             # roda os passos em ordem
-npm run assets:ogg                  # versões OGG dos sons WAV
 ```
 
 - Tempo e tamanho: o export leva horas e ocupa vários GB. Não medimos o tempo exato. Depende da máquina e do cliente.

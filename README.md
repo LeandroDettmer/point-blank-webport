@@ -41,7 +41,7 @@ Steps 1 and 2 run in `projects-folder/`. From step 3 on, the current directory i
 **1. Clone both repositories**
 
 ```sh
-git clone <url of this repository> point-blank-webport
+git clone https://github.com/LeandroDettmer/point-blank-webport point-blank-webport
 git clone https://github.com/LeandroDettmer/pb-extract-tools-public pb-extract-tools
 ```
 
@@ -56,7 +56,7 @@ npm --prefix ../pb-extract-tools install
 
 **3. Place the client**
 
-Copy your Point Blank Cross installation to `point-blank-webport/Clients/PBCross/`. The file `Clients/PBCross/PointBlank.exe` must exist. The folder name must be exactly `PBCross`. If the client is somewhere else, point the `PB_CLIENTS` variable to it (the folder that contains `PBCross`).
+Copy your Point Blank Cross installation to `point-blank-webport/Clients/PBCross/`. The file `Clients/PBCross/PointBlank.exe` must exist. The folder name must be exactly `PBCross`. If the client is somewhere else, point the `PB_CLIENTS` variable to it (the folder that contains `PBCross`), for example `set PB_CLIENTS=D:\Games\Clients` (Windows cmd) or `export PB_CLIENTS=/path/to/Clients` (bash), in the same terminal where you run `npm run pbx`.
 
 **4. Check the environment**
 
@@ -71,7 +71,6 @@ Shows Node, dependencies, ffmpeg, the client found, and which command groups can
 ```sh
 npm run pbx -- export all --client cross --dry-run   # lists the steps and writes nothing
 npm run pbx -- export all --client cross             # runs the steps in order
-npm run assets:ogg                  # OGG versions of the WAV sounds
 ```
 
 - Time and size: the export takes hours and several GB. We have not measured the exact time. It depends on your machine and the client.
