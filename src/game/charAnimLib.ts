@@ -101,7 +101,8 @@ export function clipsFor(ix: Anim3pvIndex, ai: string | null): string[] {
 export interface UiIdle { stand: AnimState; variants: AnimState[]; change: AnimState | null }
 export function uiIdleFor(ix: Anim3pvIndex, ai: string): UiIdle | null {
   const A = ix.ai[ai]?.stances.AttackIdle;
-  const stand = A?.UI_Idle_Stand;
+  // 38 weapon AIs (F2000, G36C, P90...) have UI_IdleA/B but no UI_Idle_Stand in the I3CHR: the showroom only plays UI_IdleA/B
+  const stand = A?.UI_Idle_Stand?.clip ? A.UI_Idle_Stand : A?.UI_IdleA;
   if (!A || !stand?.clip) return null;
   return { stand, variants: [A.UI_IdleA, A.UI_IdleB].filter((s): s is AnimState => !!s?.clip), change: A.UI_Idle_Change?.clip ? A.UI_Idle_Change : null };
 }
