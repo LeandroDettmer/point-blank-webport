@@ -134,6 +134,31 @@ npm run dev:all                    # recreates the database from db/init/001_ini
 
 If you started the compose file with another project name (`-p`), use the same name in `down -v`. `docker volume ls` lists the volumes.
 
+## Game modes and online play
+
+Modes you can create in a room:
+
+| Mode | Notes |
+|---|---|
+| Deathmatch | Team deathmatch with a kill limit. Sniper, Shotgun and Knuckle variants. |
+| Bomb Mission | Rounds. The attackers plant the C4 at site A or B, the defenders defuse it. A round ends by detonation, defuse, wipe or time. Sniper, Shotgun and Knuckle variants. |
+| Sabotage (Destroy) | Rounds. Each team attacks the other team's objective (generator, helicopter). Both objectives' HP bars show on the HUD. Breakdown and Helispot. Sniper, Shotgun and Knuckle variants. |
+| Defence | Rounds. One side defends its objectives. |
+| HeadHunter | Only headshots kill. |
+| Chaos | One body shot kills. |
+| Bot room | You and your team against AI bots, up to 8 vs 8. |
+
+Rooms with the team-swap flag switch sides at half of the rounds, as in the original.
+
+How an online match runs:
+
+- **The room leader hosts the match.** The match server of the original game, ported to TypeScript (`src/host/matchCore.ts`), runs in a Web Worker in the leader's tab. The other players connect to it over WebRTC. The packets are the same bytes as the original protocol.
+- **Two data channels per player.** Positions, actions and HP use an unordered channel that drops late packets. Hits, grenades, weapon drops, radio and mission events use a reliable channel.
+- **The server keeps the authority.** Room flow, respawns, deaths, round end, match end, score, EXP and gold stay on the server (`server/src/game`). The host only runs the match datagrams. Mode rules that need the host (HeadHunter and Chaos damage, Sabotage objective hits) run in the match core.
+- **Bomb timer on the server.** The 42 s fuse starts on the server when the C4 is planted. The server sends the time left every second, so all clients see the same countdown. A player who loads in late, or a spectator, still sees the planted bomb with the right time. This resend is our addition: the original protocol does not have it.
+- **The leader can leave.** If the leader's tab closes or crashes, the server picks a new leader and that player's tab starts the host. The match goes on. HP returns to full until the next respawn, because the old state is lost. When the leader changes on purpose (vote or hand-over) and the old tab is still open, it sends its match state to the new host (`src/p2p/handoff.ts`), so HP and counters carry over.
+- **NAT.** With public STUN only, players behind a strict NAT or CGNAT may not connect: the guest gives up after 20 s with `WebRTC link timeout (NAT without TURN?)`. Set `TURN_URLS`, `TURN_USERNAME` and `TURN_CREDENTIAL` on the server (see [Environment variables](#environment-variables)). Do not put TURN credentials in the client build.
+
 ## Environment variables
 
 The server reads `server/.env.local` (if it exists) and then the environment variables. An environment variable wins over the file. All of them are optional. The full list with comments is in `server/.env.example`.

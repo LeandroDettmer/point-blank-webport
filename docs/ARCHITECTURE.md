@@ -70,6 +70,10 @@ The room and the result stay on the server (Game). Only the match datagrams trav
 1. When the battle starts, Game issues a signaling ticket to each player (`server/src/web/signalTicket.ts`).
 2. The room leader runs the match core (`src/host/matchCore.ts`) in a Web Worker in its own tab.
 3. Each guest opens an `RTCPeerConnection` to the leader. The SDP and ICE exchange goes through the server's `/signal` route, which only relays messages. Without a valid ticket, nothing is delivered.
-4. If the leader leaves, the host role passes to another player (handoff). See `src/p2p/handoff.ts`.
+4. If the leader leaves, the host role passes to another player chosen by Game. If the old tab is still open (vote or hand-over), it sends its match core snapshot to the new host through `/signal` (`src/p2p/handoff.ts`); otherwise the new host starts a fresh core.
+
+Each guest has two data channels: `state` (unordered, no retransmit: position, actions, HP, ping) and `rel` (ordered, reliable: registration, hits, grenades, drops, radio, mission and object events).
+
+The host runs only the match datagrams. Respawn, death, round end, match end, score, EXP and gold stay on Game. Bomb Mission: Game owns the 42 s C4 fuse and resends the time left every second (a web addition, not in the original protocol), so late joiners and spectators get the planted bomb. Sabotage and Defence: objective hits go to the host, which reports the objectives' HP to Game; Game sends the bars to every player.
 
 Without TURN configured, only public STUN is used. Players behind a strict NAT may not connect. See `TURN_URLS` in `server/.env.example`.

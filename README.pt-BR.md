@@ -134,6 +134,31 @@ npm run dev:all                    # recria o banco a partir de db/init/001_init
 
 Se você subiu o compose com outro nome de projeto (`-p`), use o mesmo nome no `down -v`. `docker volume ls` lista os volumes.
 
+## Modos de jogo e partida online
+
+Modos que você pode criar numa sala:
+
+| Modo | Observações |
+|---|---|
+| Deathmatch | Mata-mata em times com limite de kills. Variantes Sniper, Shotgun e Porrada. |
+| Missão Bomba (Destruição) | Rodadas. Os atacantes plantam o C4 no local A ou B, os defensores desarmam. A rodada acaba por explosão, desarme, time eliminado ou tempo. Variantes Sniper, Shotgun e Porrada. |
+| Sabotagem | Rodadas. Cada time ataca o objetivo do outro (gerador, helicóptero). As barras de vida dos dois objetivos aparecem no HUD. Breakdown e Helispot. Variantes Sniper, Shotgun e Porrada. |
+| Defesa | Rodadas. Um lado defende os próprios objetivos. |
+| HeadHunter | Só tiro na cabeça mata. |
+| Caos | Um tiro no corpo mata. |
+| Sala com bots | Você e seu time contra bots, até 8 x 8. |
+
+Salas com a opção de troca de lado trocam os times na metade das rodadas, como no original.
+
+Como roda uma partida online:
+
+- **O líder da sala hospeda a partida.** O servidor de partida do jogo original, portado para TypeScript (`src/host/matchCore.ts`), roda num Web Worker na aba do líder. Os outros jogadores se conectam a ele por WebRTC. Os pacotes são os mesmos bytes do protocolo original.
+- **Dois canais de dados por jogador.** Posição, ações e HP vão num canal sem ordem que descarta pacote atrasado. Hits, granadas, armas largadas, rádio e eventos de missão vão num canal confiável.
+- **O servidor continua com a autoridade.** Fluxo da sala, respawn, morte, fim de rodada, fim de partida, placar, EXP e gold ficam no servidor (`server/src/game`). O host só processa os datagramas da partida. As regras de modo que precisam do host (dano de HeadHunter e Caos, hits nos objetivos da Sabotagem) rodam no núcleo da partida.
+- **Pavio da bomba no servidor.** O pavio de 42 s começa no servidor quando o C4 é plantado. O servidor manda o tempo restante a cada segundo, então todos os clientes veem a mesma contagem. Quem carrega a partida depois, ou um espectador, também vê a bomba plantada com o tempo certo. Esse reenvio é nosso: o protocolo original não tem.
+- **O líder pode sair.** Se a aba do líder fecha ou trava, o servidor escolhe um novo líder e a aba dele sobe o host. A partida continua. O HP volta ao máximo até o próximo respawn, porque o estado antigo se perde. Quando o líder muda de propósito (voto ou cessão) e a aba antiga ainda está aberta, ela manda o estado da partida para o novo host (`src/p2p/handoff.ts`), e HP e contadores continuam.
+- **NAT.** Só com STUN público, jogadores atrás de NAT restrito ou CGNAT podem não conectar: o convidado desiste depois de 20 s com `WebRTC link timeout (NAT without TURN?)`. Configure `TURN_URLS`, `TURN_USERNAME` e `TURN_CREDENTIAL` no servidor (ver [Variáveis de ambiente](#variáveis-de-ambiente)). Não ponha credencial TURN no build do cliente.
+
 ## Variáveis de ambiente
 
 O servidor lê `server/.env.local` (se existir) e depois as variáveis do ambiente. Variável do ambiente vence o arquivo. Todas são opcionais. A lista completa com comentários está em `server/.env.example`.
